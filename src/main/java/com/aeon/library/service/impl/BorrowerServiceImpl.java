@@ -1,13 +1,13 @@
 package com.aeon.library.service.impl;
 
 import com.aeon.library.dto.*;
-import com.aeon.library.entity.BookCopy;
-import com.aeon.library.entity.Borrower;
-import com.aeon.library.entity.Borrowing;
+import com.aeon.library.entity.Copy;
+import com.aeon.library.entity.Member;
+import com.aeon.library.entity.Loan;
 import com.aeon.library.exception.GeneralException;
-import com.aeon.library.repo.BookCopyRepository;
-import com.aeon.library.repo.BorrowerRepository;
-import com.aeon.library.repo.BorrowingRepository;
+import com.aeon.library.repo.CopyRepository;
+import com.aeon.library.repo.MemberRepository;
+import com.aeon.library.repo.LoanRepository;
 import com.aeon.library.service.BorrowerService;
 import com.aeon.library.util.DateUtil;
 import org.dozer.DozerBeanMapper;
@@ -19,60 +19,56 @@ import java.util.Optional;
 
 @Service
 public class BorrowerServiceImpl implements BorrowerService {
-    private final BookCopyRepository bookCopyRepository;
-    private final BorrowerRepository borrowerRepository;
-    private final BorrowingRepository borrowingRepository;
+    private final CopyRepository copyRepository;
+    private final MemberRepository memberRepository;
+    private final LoanRepository loanRepository;
     private final DozerBeanMapper mapper;
 
-    public BorrowerServiceImpl(BorrowerRepository borrowerRepository,
-                               BookCopyRepository bookCopyRepository, BorrowingRepository borrowingRepository,
+    public BorrowerServiceImpl(MemberRepository memberRepository,
+                               CopyRepository copyRepository, LoanRepository loanRepository,
                                DozerBeanMapper dozerBeanMapper) {
-        this.borrowerRepository = borrowerRepository;
-        this.bookCopyRepository = bookCopyRepository;
-        this.borrowingRepository = borrowingRepository;
+        this.memberRepository = memberRepository;
+        this.copyRepository = copyRepository;
+        this.loanRepository = loanRepository;
         this.mapper = dozerBeanMapper;
     }
 
     @Override
     public BorrowBookRes borrowBook(Long borrowerId, BorrowBookReq request) throws GeneralException {
-        // check for outstanding books
-        // limit books borrowed to 5
-
         Timestamp today = Timestamp.from(Instant.now());
         Timestamp dueDate = DateUtil.stringToTimestamp(request.getDueDate(), DateUtil.YYYY_MM_DD);
         if (dueDate.after(today) == false) {
             throw new GeneralException("Due date is before today");
         }
 
-        Optional<Borrower> borrowerOpt = borrowerRepository.findByEmail(request.getEmail());
-        if (borrowerOpt.isPresent() == false) {
+        Optional<Member> memberOpt = memberRepository.findByEmail(request.getEmail());
+        if (memberOpt.isPresent() == false) {
             throw new GeneralException("Email doesn't exist");
         }
 
-        Optional<BookCopy> bookOpt = bookCopyRepository.findByIdAndDeletedFalse(request.getId());
-        if (bookOpt.isPresent() == false) {
+        Optional<Copy> copyOpt = copyRepository.findByIdAndDeletedFalse(request.getId());
+        if (copyOpt.isPresent() == false) {
             throw new GeneralException("Book doesn't exist");
         }
 
-        BookCopy bookCopy = bookOpt.get();
-
-        if (bookCopy.isBorrowed()) {
+        Copy copy = copyOpt.get();
+        if (copy.isBorrowed()) {
             throw new GeneralException("Book is currently borrowed");
         }
 
-        Borrowing borrowing = new Borrowing();
-        borrowing.setBorrower(borrowerOpt.get());
-        borrowing.setBookCopy(bookCopy);
-        borrowing.setIssueDate(today);
-        borrowing.setDueDate(dueDate);
-        borrowing.getBookCopy().setBorrowed(true);
+        Loan loan = new Loan();
+        loan.setMember(memberOpt.get());
+        loan.setCopy(copy);
+        loan.setIssueDate(today);
+        loan.setDueDate(dueDate);
+        loan.getCopy().setBorrowed(true);
 
-        borrowingRepository.save(borrowing);
+        loanRepository.save(loan);
 
         BorrowBookRes borrowBookRes = new BorrowBookRes();
         BookDto bookDto = new BookDto();
-        mapper.map(bookCopy.getBook(), bookDto);
-        mapper.map(borrowing, borrowBookRes);
+        mapper.map(copy.getBook(), bookDto);
+        mapper.map(loan, borrowBookRes);
         borrowBookRes.setBook(bookDto);
 
         return borrowBookRes;
@@ -80,60 +76,60 @@ public class BorrowerServiceImpl implements BorrowerService {
 
     @Override
     public ReturnBookRes returnBook(Long borrowerId, ReturnBookReq request) throws GeneralException {
-        Optional<Borrower> borrowerOpt = borrowerRepository.findByEmail(request.getEmail());
-        if (borrowerOpt.isPresent() == false) {
+        Optional<Member> memberOpt = memberRepository.findByEmail(request.getEmail());
+        if (memberOpt.isPresent() == false) {
             throw new GeneralException("Email doesn't exist");
         }
 
-        Optional<BookCopy> bookCopyOpt = bookCopyRepository.findById(request.getId());
-        if (bookCopyOpt.isPresent() == false) {
+        Optional<Copy> copyOpt = copyRepository.findById(request.getId());
+        if (copyOpt.isPresent() == false) {
             throw new GeneralException("Book doesn't exist");
         }
 
-        Optional<Borrowing> borrowingOpt = borrowingRepository.findBookInBorrowedStatus(request.getId());
-        BookCopy bookCopy = bookCopyOpt.get();
-        if (bookCopy.isBorrowed() == false || borrowingOpt.isPresent() == false) {
+        Optional<Loan> loanOpt = loanRepository.findLoanedCopy(request.getId());
+        Copy copy = copyOpt.get();
+        if (copy.isBorrowed() == false || loanOpt.isPresent() == false) {
             throw new GeneralException("Book has already been returned");
         }
 
-        if (borrowingOpt.get().getBorrower().getEmail().equalsIgnoreCase(request.getEmail()) == false) {
+        if (loanOpt.get().getMember().getEmail().equalsIgnoreCase(request.getEmail()) == false) {
             throw new GeneralException("Book is not borrowed under this email");
         }
 
-        Borrowing borrowing = borrowingOpt.get();
-        borrowing.setReturnDate(Timestamp.from(Instant.now()));
+        Loan loan = loanOpt.get();
+        loan.setReturnDate(Timestamp.from(Instant.now()));
 
-        bookCopy.setBorrowed(false);
-        bookCopyRepository.save(bookCopy);
-        borrowingRepository.save(borrowing);
+        copy.setBorrowed(false);
+        copyRepository.save(copy);
+        loanRepository.save(loan);
 
         ReturnBookRes returnBookRes = new ReturnBookRes();
         BookDto bookDto = new BookDto();
-        mapper.map(bookCopy.getBook(), bookDto);
-        mapper.map(borrowing, returnBookRes);
+        mapper.map(copy.getBook(), bookDto);
+        mapper.map(loan, returnBookRes);
         returnBookRes.setBook(bookDto);
 
         return returnBookRes;
     }
 
     @Override
-    public CreateBorrowerRes registerBorrower(CreateBorrowerReq request) throws GeneralException {
-        Optional<Borrower> emailOpt = borrowerRepository.findByEmail(request.getEmail());
+    public CreateMemberRes registerBorrower(CreateMemberReq request) throws GeneralException {
+        Optional<Member> memberOpt = memberRepository.findByEmail(request.getEmail());
 
-        if (emailOpt.isPresent()) {
+        if (memberOpt.isPresent()) {
             throw new GeneralException("Email is already registered");
         }
 
-        Borrower borrower = new Borrower();
-        borrower.setName(request.getName());
-        borrower.setEmail(request.getEmail());
+        Member member = new Member();
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
 
-        borrowerRepository.save(borrower);
+        memberRepository.save(member);
 
-        CreateBorrowerRes response = new CreateBorrowerRes();
-        response.setId(borrower.getId());
-        response.setName(borrower.getName());
-        response.setEmail(borrower.getEmail());
+        CreateMemberRes response = new CreateMemberRes();
+        response.setId(member.getId());
+        response.setName(member.getName());
+        response.setEmail(member.getEmail());
 
         return response;
     }

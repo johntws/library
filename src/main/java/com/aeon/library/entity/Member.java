@@ -10,22 +10,12 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Entity
-public class Borrowing {
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "book_id")
-    private BookCopy bookCopy;
-
-    @ManyToOne
-    @JoinColumn(name = "borrower_id")
-    private Borrower borrower;
-
-    private Timestamp issueDate;
-    private Timestamp dueDate;
-    private Timestamp returnDate;
+    private String name;
+    private String email;
 
     @CreationTimestamp
     private Timestamp createdDate;

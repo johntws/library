@@ -1,39 +1,40 @@
 package com.aeon.library.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 
-@Setter
 @Getter
+@Setter
 @Entity
-public class BookCopy {
+public class Loan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "isbn")
-    private Book book;
+    @JoinColumn(name = "book_id")
+    private Copy copy;
+
+    @ManyToOne
+    @JoinColumn(name = "borrower_id")
+    private Member member;
+
+    private Timestamp issueDate;
+    private Timestamp dueDate;
+    private Timestamp returnDate;
 
     @CreationTimestamp
     private Timestamp createdDate;
-
     private String createdBy;
 
-    @UpdateTimestamp
+    @CreationTimestamp
     private Timestamp modifiedDate;
-
     private String modifiedBy;
-
     private boolean deleted;
-
-    private boolean borrowed;
 
     @PrePersist
     public void prePersist() {

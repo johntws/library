@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CreateBorrowerReq {
+public class CreateMemberReq {
     @NotBlank
     private String name;
 
-    @Email(message = "Email is not valid")
+    @Email
     private String email;
 }

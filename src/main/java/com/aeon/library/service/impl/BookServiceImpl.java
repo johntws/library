@@ -1,11 +1,11 @@
 package com.aeon.library.service.impl;
 
 import com.aeon.library.dto.*;
-import com.aeon.library.entity.BookCopy;
+import com.aeon.library.entity.Copy;
 import com.aeon.library.entity.Book;
 import com.aeon.library.exception.GeneralException;
 import com.aeon.library.repo.BookRepository;
-import com.aeon.library.repo.BookCopyRepository;
+import com.aeon.library.repo.CopyRepository;
 import com.aeon.library.service.BookService;
 import com.aeon.library.specification.BookSpecification;
 import com.aeon.library.util.IsbnUtil;
@@ -21,14 +21,14 @@ import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
-    private final BookCopyRepository bookCopyRepository;
+    private final CopyRepository copyRepository;
     private final DozerBeanMapper mapper;
     private final BookRepository bookRepository;
 
-    public BookServiceImpl(BookCopyRepository bookCopyRepository,
+    public BookServiceImpl(CopyRepository copyRepository,
                            DozerBeanMapper mapper,
                            BookRepository bookRepository) {
-        this.bookCopyRepository = bookCopyRepository;
+        this.copyRepository = copyRepository;
         this.mapper = mapper;
         this.bookRepository = bookRepository;
     }
@@ -39,13 +39,12 @@ public class BookServiceImpl implements BookService {
             throw new GeneralException("Invalid ISBN");
         }
 
-        Optional<Book> bookDetailsOpt = bookRepository.findById(request.getIsbn());
-
         Book book;
-        BookCopy bookCopy = new BookCopy();
+        Copy copy = new Copy();
+        Optional<Book> bookOpt = bookRepository.findById(request.getIsbn());
 
-        if (bookDetailsOpt.isPresent()) {
-            book = bookDetailsOpt.get();
+        if (bookOpt.isPresent()) {
+            book = bookOpt.get();
             if (book.getAuthor().equalsIgnoreCase(request.getAuthor()) == false
                     || book.getTitle().equalsIgnoreCase(request.getTitle()) == false) {
                 throw new GeneralException("Author and/or Title does not match existing ISBN");
@@ -57,16 +56,16 @@ public class BookServiceImpl implements BookService {
             book.setTitle(request.getTitle());
         }
 
-        bookCopy.setBook(book);
+        copy.setBook(book);
         bookRepository.save(book);
-        bookCopyRepository.save(bookCopy);
+        copyRepository.save(copy);
 
         CreateBookRes response = new CreateBookRes();
-        response.setId(bookCopy.getId());
+        response.setId(copy.getId());
         response.setAuthor(book.getAuthor());
         response.setTitle(book.getTitle());
         response.setIsbn(book.getIsbn());
-        response.setBorrowed(bookCopy.isBorrowed());
+        response.setBorrowed(copy.isBorrowed());
 
         return response;
     }
@@ -76,38 +75,36 @@ public class BookServiceImpl implements BookService {
         Specification<Book> specification = Specification
                 .where(BookSpecification.likeIsbn(request.getIsbn()))
                 .and(BookSpecification.likeAuthor(request.getAuthor()))
-                .and(BookSpecification.likeTitle(request.getTitle()))
-                .and(BookSpecification.equalDeleted(false));
+                .and(BookSpecification.likeTitle(request.getTitle()));
 
         request.setPageNo(request.getPageNo() - 1);
         PageRequest pageRequest = PageRequest.of(request.getPageNo(), request.getPageSize());
-
-        Page<Book> bookPages = bookRepository.findAll(specification, pageRequest);
-        List<Book> bookCopyList = bookPages.get().toList();
+        Page<Book> bookPage = bookRepository.findAll(specification, pageRequest);
+        List<Book> bookList = bookPage.get().toList();
 
         ArrayList<BookDto> bookDtoList = new ArrayList<>();
-        for (Book book : bookCopyList) {
+        for (Book book : bookList) {
             BookDto bookDto = new BookDto();
             bookDto.setAuthor(book.getAuthor());
             bookDto.setTitle(book.getTitle());
             bookDto.setIsbn(book.getIsbn());
 
-            ArrayList<BookCopyDto> bookCopyDtoList = new ArrayList<>();
-            for (BookCopy bookCopy : book.getBookCopies()) {
-                BookCopyDto bookCopyDto = new BookCopyDto();
-                bookCopyDto.setId(bookCopy.getId());
-                bookCopyDto.setBorrowed(bookCopy.isBorrowed());
-                bookCopyDtoList.add(bookCopyDto);
+            ArrayList<CopyDto> copyDtoList = new ArrayList<>();
+            for (Copy copy : book.getCopies()) {
+                CopyDto copyDto = new CopyDto();
+                copyDto.setId(copy.getId());
+                copyDto.setBorrowed(copy.isBorrowed());
+                copyDtoList.add(copyDto);
             }
 
-            bookDto.setCopies(bookCopyDtoList);
+            bookDto.setCopies(copyDtoList);
             bookDtoList.add(bookDto);
         }
 
         GetBookRes response = new GetBookRes();
         response.setBookList(bookDtoList);
-        response.setTotalPages(bookPages.getTotalPages());
-        response.setCurrentPage(bookPages.getPageable().getPageNumber() + 1);
+        response.setTotalPages(bookPage.getTotalPages());
+        response.setCurrentPage(bookPage.getPageable().getPageNumber() + 1);
 
         return response;
     }

@@ -22,7 +22,7 @@ public class Book {
     private boolean returned;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-    private List<BookCopy> bookCopies;
+    private List<Copy> copies;
 
     @CreationTimestamp
     private Timestamp createdDate;

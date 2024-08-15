@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class BookDto {
-    private List<BookCopyDto> copies;
+    private List<CopyDto> copies;
     private String isbn;
     private String title;
     private String author;

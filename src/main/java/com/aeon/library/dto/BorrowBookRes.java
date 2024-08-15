@@ -1,6 +1,5 @@
 package com.aeon.library.dto;
 
-import com.aeon.library.entity.Borrower;
 import lombok.Data;
 
 import java.sql.Timestamp;

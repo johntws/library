@@ -18,7 +18,7 @@ public class BorrowerController {
     }
 
     @PostMapping
-    public CreateBorrowerRes registerBorrower(@Valid @RequestBody CreateBorrowerReq request) throws GeneralException {
+    public CreateMemberRes registerBorrower(@Valid @RequestBody CreateMemberReq request) throws GeneralException {
         return borrowerService.registerBorrower(request);
     }
 
