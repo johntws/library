@@ -1,11 +1,14 @@
 package com.aeon.library.service.impl;
 
 import com.aeon.library.dto.*;
+import com.aeon.library.entity.BookCopy;
 import com.aeon.library.entity.Book;
 import com.aeon.library.exception.GeneralException;
 import com.aeon.library.repo.BookRepository;
+import com.aeon.library.repo.BookCopyRepository;
 import com.aeon.library.service.BookService;
 import com.aeon.library.specification.BookSpecification;
+import com.aeon.library.util.IsbnUtil;
 import org.dozer.DozerBeanMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,39 +21,52 @@ import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
-    private final BookRepository bookRepository;
+    private final BookCopyRepository bookCopyRepository;
     private final DozerBeanMapper mapper;
+    private final BookRepository bookRepository;
 
-    public BookServiceImpl(BookRepository bookRepository, DozerBeanMapper mapper) {
-        this.bookRepository = bookRepository;
+    public BookServiceImpl(BookCopyRepository bookCopyRepository,
+                           DozerBeanMapper mapper,
+                           BookRepository bookRepository) {
+        this.bookCopyRepository = bookCopyRepository;
         this.mapper = mapper;
+        this.bookRepository = bookRepository;
     }
 
     @Override
     public CreateBookRes registerBook(CreateBookReq request) throws GeneralException {
-        Optional<Book> bookOpt = bookRepository.findByIsbn(request.getIsbn());
-
-        if (bookOpt.isPresent()) {
-            Book book = bookOpt.get();
-            if (book.getBookDetails().getAuthor().equalsIgnoreCase(request.getAuthor()) == false
-                    || book.getBookDetails().getTitle().equalsIgnoreCase(request.getTitle()) == false) {
-                throw new GeneralException("Author and/or Title does not match existing ISBN");
-            }
+        if (IsbnUtil.validateISBN10(request.getIsbn()) == false) {
+            throw new GeneralException("Invalid ISBN");
         }
 
-        Book book = new Book();
-        book.getBookDetails().setIsbn(request.getIsbn());
-        book.getBookDetails().setAuthor(request.getAuthor());
-        book.getBookDetails().setTitle(request.getTitle());
+        Optional<Book> bookDetailsOpt = bookRepository.findById(request.getIsbn());
 
+        Book book;
+        BookCopy bookCopy = new BookCopy();
+
+        if (bookDetailsOpt.isPresent()) {
+            book = bookDetailsOpt.get();
+            if (book.getAuthor().equalsIgnoreCase(request.getAuthor()) == false
+                    || book.getTitle().equalsIgnoreCase(request.getTitle()) == false) {
+                throw new GeneralException("Author and/or Title does not match existing ISBN");
+            }
+        } else {
+            book = new Book();
+            book.setIsbn(request.getIsbn());
+            book.setAuthor(request.getAuthor());
+            book.setTitle(request.getTitle());
+        }
+
+        bookCopy.setBook(book);
         bookRepository.save(book);
+        bookCopyRepository.save(bookCopy);
 
         CreateBookRes response = new CreateBookRes();
-        response.setId(book.getId());
-        response.setAuthor(book.getBookDetails().getAuthor());
-        response.setTitle(book.getBookDetails().getTitle());
-        response.setIsbn(book.getBookDetails().getIsbn());
-        response.setBorrowed(false);
+        response.setId(bookCopy.getId());
+        response.setAuthor(book.getAuthor());
+        response.setTitle(book.getTitle());
+        response.setIsbn(book.getIsbn());
+        response.setBorrowed(bookCopy.isBorrowed());
 
         return response;
     }
@@ -60,18 +76,31 @@ public class BookServiceImpl implements BookService {
         Specification<Book> specification = Specification
                 .where(BookSpecification.likeIsbn(request.getIsbn()))
                 .and(BookSpecification.likeAuthor(request.getAuthor()))
-                .and(BookSpecification.likeTitle(request.getTitle()));
+                .and(BookSpecification.likeTitle(request.getTitle()))
+                .and(BookSpecification.equalDeleted(false));
 
         request.setPageNo(request.getPageNo() - 1);
         PageRequest pageRequest = PageRequest.of(request.getPageNo(), request.getPageSize());
 
         Page<Book> bookPages = bookRepository.findAll(specification, pageRequest);
-        List<Book> bookList = bookPages.get().toList();
+        List<Book> bookCopyList = bookPages.get().toList();
 
         ArrayList<BookDto> bookDtoList = new ArrayList<>();
-        for (Book book : bookList) {
+        for (Book book : bookCopyList) {
             BookDto bookDto = new BookDto();
-            mapper.map(book, bookDto);
+            bookDto.setAuthor(book.getAuthor());
+            bookDto.setTitle(book.getTitle());
+            bookDto.setIsbn(book.getIsbn());
+
+            ArrayList<BookCopyDto> bookCopyDtoList = new ArrayList<>();
+            for (BookCopy bookCopy : book.getBookCopies()) {
+                BookCopyDto bookCopyDto = new BookCopyDto();
+                bookCopyDto.setId(bookCopy.getId());
+                bookCopyDto.setBorrowed(bookCopy.isBorrowed());
+                bookCopyDtoList.add(bookCopyDto);
+            }
+
+            bookDto.setCopies(bookCopyDtoList);
             bookDtoList.add(bookDto);
         }
 
@@ -79,48 +108,6 @@ public class BookServiceImpl implements BookService {
         response.setBookList(bookDtoList);
         response.setTotalPages(bookPages.getTotalPages());
         response.setCurrentPage(bookPages.getPageable().getPageNumber() + 1);
-
-        return response;
-    }
-
-    @Override
-    public void deleteBook(Long id) {
-        Optional<Book> bookOpt = bookRepository.findById(id);
-
-        if (bookOpt.isEmpty() || bookOpt.get().isDeleted()) {
-            throw new GeneralException("Book does not exist");
-        }
-
-        Book book = bookOpt.get();
-        if (book.isBorrowed()) {
-            throw new GeneralException("Book is currently borrowed");
-        }
-
-        book.setDeleted(true);
-        bookRepository.save(book);
-    }
-
-    @Override
-    public CreateBookRes updateBook(Long bookId, CreateBookReq request) throws GeneralException {
-//        Optional<Book> bookOpt = bookRepository.findByIdAndDeletedFalse(bookId);
-//
-//        if (bookOpt.isEmpty()) {
-//            throw new GeneralException("Book doesn't exist");
-//        }
-//
-//        Book book = bookOpt.get();
-//        book.setIsbn(request.getIsbn());
-//        book.setAuthor(request.getAuthor());
-//        book.setTitle(request.getTitle());
-//
-//        bookRepository.save(book);
-
-        CreateBookRes response = new CreateBookRes();
-//        response.setId(book.getId());
-//        response.setAuthor(book.getAuthor());
-//        response.setTitle(book.getTitle());
-//        response.setIsbn(book.getIsbn());
-//        response.setBorrowed(book.isBorrowed());
 
         return response;
     }

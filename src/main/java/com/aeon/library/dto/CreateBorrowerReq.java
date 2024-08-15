@@ -9,6 +9,6 @@ public class CreateBorrowerReq {
     @NotBlank
     private String name;
 
-    @Email
+    @Email(message = "Email is not valid")
     private String email;
 }

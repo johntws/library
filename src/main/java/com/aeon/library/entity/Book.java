@@ -8,18 +8,21 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Setter
 @Getter
 @Entity
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String isbn;
 
-    @ManyToOne
-    @JoinColumn(name = "bookdetails_isbn")
-    private BookDetails bookDetails;
+    private String title;
+    private String author;
+    private boolean returned;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    private List<BookCopy> bookCopies;
 
     @CreationTimestamp
     private Timestamp createdDate;
@@ -32,8 +35,6 @@ public class Book {
     private String modifiedBy;
 
     private boolean deleted;
-
-    private boolean borrowed;
 
     @PrePersist
     public void prePersist() {

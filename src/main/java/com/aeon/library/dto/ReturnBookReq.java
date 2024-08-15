@@ -6,13 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class BorrowBookReq {
+public class ReturnBookReq {
     @NotNull
     private Long id;
 
     @Email
     private String email;
-
-    @NotEmpty
-    private String dueDate;
 }

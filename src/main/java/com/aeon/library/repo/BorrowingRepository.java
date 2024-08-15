@@ -15,7 +15,7 @@ public interface BorrowingRepository extends JpaRepository<Borrowing, Long>, Jpa
     @Query(value = "select * from borrowing where borrower = :borrower and", nativeQuery = true)
     List<Borrowing> findOutStandingBooks(@Param("borrower") String borrower);
 
-    @Query(value = "select * from borrowing where id = :id and returnedDate is null", nativeQuery = true)
+    @Query(value = "select * from borrowing where book_id = :id and return_date is null", nativeQuery = true)
     Optional<Borrowing> findBookInBorrowedStatus(@Param("id") Long id);
 
 }

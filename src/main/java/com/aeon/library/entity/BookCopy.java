@@ -12,13 +12,14 @@ import java.sql.Timestamp;
 @Setter
 @Getter
 @Entity
-public class BookDetails {
+public class BookCopy {
     @Id
-    private String isbn;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String title;
-    private String author;
-    private boolean returned;
+    @ManyToOne
+    @JoinColumn(name = "isbn")
+    private Book book;
 
     @CreationTimestamp
     private Timestamp createdDate;
@@ -31,6 +32,8 @@ public class BookDetails {
     private String modifiedBy;
 
     private boolean deleted;
+
+    private boolean borrowed;
 
     @PrePersist
     public void prePersist() {

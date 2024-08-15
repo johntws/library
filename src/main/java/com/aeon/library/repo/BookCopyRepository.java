@@ -1,15 +1,16 @@
 package com.aeon.library.repo;
 
 import com.aeon.library.entity.BookCopy;
-import com.aeon.library.entity.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, String>, JpaSpecificationExecutor<Book> {
-//    List<BookCopy> findByIdAndDeletedFalse(@Param("id") Long id);
+public interface BookCopyRepository extends JpaRepository<BookCopy, Long>, JpaSpecificationExecutor<BookCopy> {
+//    Optional<Book> findByIsbn(@Param("isbn") String isbn);
+    Optional<BookCopy> findByIdAndDeletedFalse(@Param("id") Long id);
+
 }

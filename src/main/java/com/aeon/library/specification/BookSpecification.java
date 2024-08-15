@@ -34,4 +34,14 @@ public class BookSpecification {
             return criteriaBuilder.like(root.get("author"), "%" + author + "%");
         };
     }
+
+    public static Specification<Book> equalDeleted(Boolean deleted) {
+        return (root, query, criteriaBuilder) -> {
+            if (deleted == null) {
+                return null;
+            }
+
+            return criteriaBuilder.equal(root.get("deleted"), deleted);
+        };
+    }
 }

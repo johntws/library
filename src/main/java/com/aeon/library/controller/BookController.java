@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/books")
+@RequestMapping("/books")
 public class BookController {
 
     private final BookService bookService;
@@ -27,22 +27,7 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<GetBookRes> getBooks(@Valid GetBookReq request) throws GeneralException {
-        GetBookRes body = bookService.getBooks(request);
-        return new ResponseEntity<>(body, HttpStatus.ACCEPTED);
+    public GetBookRes getBooks(@Valid GetBookReq request) throws GeneralException {
+        return bookService.getBooks(request);
     }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBook(@PathVariable @Valid @NotNull Long bookId) throws GeneralException {
-        bookService.deleteBook(bookId);
-        return null;
-    }
-
-    @PutMapping("/{id}")
-    public CreateBookRes updateBook(@PathVariable @Valid @NotNull Long bookId, @Valid @RequestBody CreateBookReq request) throws GeneralException {
-        return bookService.updateBook(bookId, request);
-    }
-
-
 }

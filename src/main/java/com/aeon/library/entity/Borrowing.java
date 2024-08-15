@@ -17,14 +17,15 @@ public class Borrowing {
 
     @ManyToOne
     @JoinColumn(name = "book_id")
-    private Book book;
+    private BookCopy bookCopy;
 
     @ManyToOne
     @JoinColumn(name = "borrower_id")
     private Borrower borrower;
 
-    private Timestamp borrowedDate;
-    private Timestamp returnedDate;
+    private Timestamp issueDate;
+    private Timestamp dueDate;
+    private Timestamp returnDate;
 
     @CreationTimestamp
     private Timestamp createdDate;

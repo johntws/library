@@ -2,11 +2,12 @@ package com.aeon.library.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class BookDto {
-    private Long id;
+    private List<BookCopyDto> copies;
     private String isbn;
     private String title;
     private String author;
-    private boolean borrowed;
 }
