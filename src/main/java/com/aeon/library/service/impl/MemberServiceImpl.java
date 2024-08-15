@@ -8,7 +8,7 @@ import com.aeon.library.exception.GeneralException;
 import com.aeon.library.repo.CopyRepository;
 import com.aeon.library.repo.MemberRepository;
 import com.aeon.library.repo.LoanRepository;
-import com.aeon.library.service.BorrowerService;
+import com.aeon.library.service.MemberService;
 import com.aeon.library.util.DateUtil;
 import org.dozer.DozerBeanMapper;
 import org.springframework.stereotype.Service;
@@ -18,15 +18,15 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Service
-public class BorrowerServiceImpl implements BorrowerService {
+public class MemberServiceImpl implements MemberService {
     private final CopyRepository copyRepository;
     private final MemberRepository memberRepository;
     private final LoanRepository loanRepository;
     private final DozerBeanMapper mapper;
 
-    public BorrowerServiceImpl(MemberRepository memberRepository,
-                               CopyRepository copyRepository, LoanRepository loanRepository,
-                               DozerBeanMapper dozerBeanMapper) {
+    public MemberServiceImpl(MemberRepository memberRepository,
+                             CopyRepository copyRepository, LoanRepository loanRepository,
+                             DozerBeanMapper dozerBeanMapper) {
         this.memberRepository = memberRepository;
         this.copyRepository = copyRepository;
         this.loanRepository = loanRepository;

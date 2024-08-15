@@ -1,6 +1,6 @@
 package com.aeon.library.util;
 
-public class IsbnUtil {
+public class BookUtil {
     public static boolean validateISBN10(String isbn) {
         isbn = isbn.replace("-", "");
         if (isbn.length() != 10) {

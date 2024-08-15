@@ -8,7 +8,7 @@ import com.aeon.library.repo.BookRepository;
 import com.aeon.library.repo.CopyRepository;
 import com.aeon.library.service.BookService;
 import com.aeon.library.specification.BookSpecification;
-import com.aeon.library.util.IsbnUtil;
+import com.aeon.library.util.BookUtil;
 import org.dozer.DozerBeanMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,7 +35,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public CreateBookRes registerBook(CreateBookReq request) throws GeneralException {
-        if (IsbnUtil.validateISBN10(request.getIsbn()) == false) {
+        if (BookUtil.validateISBN10(request.getIsbn()) == false) {
             throw new GeneralException("Invalid ISBN");
         }
 
@@ -82,6 +82,10 @@ public class BookServiceImpl implements BookService {
         Page<Book> bookPage = bookRepository.findAll(specification, pageRequest);
         List<Book> bookList = bookPage.get().toList();
 
+        return getBookResMapper(bookList, bookPage);
+    }
+
+    private static GetBookRes getBookResMapper(List<Book> bookList, Page<Book> bookPage) {
         ArrayList<BookDto> bookDtoList = new ArrayList<>();
         for (Book book : bookList) {
             BookDto bookDto = new BookDto();
@@ -105,7 +109,6 @@ public class BookServiceImpl implements BookService {
         response.setBookList(bookDtoList);
         response.setTotalPages(bookPage.getTotalPages());
         response.setCurrentPage(bookPage.getPageable().getPageNumber() + 1);
-
         return response;
     }
 }
