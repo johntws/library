@@ -13,8 +13,8 @@ import com.aeon.library.util.DateUtil;
 import org.dozer.DozerBeanMapper;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.Instant;
+import java.sql.Date;
 import java.util.Optional;
 
 @Service
@@ -35,8 +35,8 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public BorrowBookRes borrowBook(Long borrowerId, BorrowBookReq request) throws GeneralException {
-        Timestamp today = Timestamp.from(Instant.now());
-        Timestamp dueDate = DateUtil.stringToTimestamp(request.getDueDate(), DateUtil.YYYY_MM_DD);
+        Date today = new Date(Instant.now().toEpochMilli());
+        Date dueDate = DateUtil.stringToDate(request.getDueDate(), DateUtil.YYYY_MM_DD);
         if (dueDate.after(today) == false) {
             throw new GeneralException("Due date is before today");
         }
@@ -66,10 +66,23 @@ public class MemberServiceImpl implements MemberService {
         loanRepository.save(loan);
 
         BorrowBookRes borrowBookRes = new BorrowBookRes();
+
         BookDto bookDto = new BookDto();
-        mapper.map(copy.getBook(), bookDto);
-        mapper.map(loan, borrowBookRes);
+        bookDto.setIsbn(copy.getBook().getIsbn());
+        bookDto.setAuthor(copy.getBook().getAuthor());
+        bookDto.setTitle(copy.getBook().getTitle());
+        bookDto.setId(copy.getId());
+
+        BorrowerDto borrowerDto = new BorrowerDto();
+        borrowerDto.setEmail(memberOpt.get().getEmail());
+        borrowerDto.setName(memberOpt.get().getName());
+        borrowerDto.setId(memberOpt.get().getId());
+
         borrowBookRes.setBook(bookDto);
+        borrowBookRes.setIssueDate(loan.getIssueDate());
+        borrowBookRes.setDueDate(loan.getDueDate());
+        borrowBookRes.setId(loan.getId());
+        borrowBookRes.setBorrower(borrowerDto);
 
         return borrowBookRes;
     }
@@ -97,18 +110,35 @@ public class MemberServiceImpl implements MemberService {
         }
 
         Loan loan = loanOpt.get();
-        loan.setReturnDate(Timestamp.from(Instant.now()));
+        loan.setReturnDate(new Date(Instant.now().toEpochMilli()));
 
         copy.setBorrowed(false);
         copyRepository.save(copy);
         loanRepository.save(loan);
 
+        return getReturnBookResMapper(copy, memberOpt, loan);
+    }
+
+    private static ReturnBookRes getReturnBookResMapper(Copy copy, Optional<Member> memberOpt, Loan loan) {
         ReturnBookRes returnBookRes = new ReturnBookRes();
         BookDto bookDto = new BookDto();
-        mapper.map(copy.getBook(), bookDto);
-        mapper.map(loan, returnBookRes);
-        returnBookRes.setBook(bookDto);
 
+        bookDto.setIsbn(copy.getBook().getIsbn());
+        bookDto.setAuthor(copy.getBook().getAuthor());
+        bookDto.setTitle(copy.getBook().getTitle());
+        bookDto.setId(copy.getId());
+
+        BorrowerDto borrowerDto = new BorrowerDto();
+        borrowerDto.setEmail(memberOpt.get().getEmail());
+        borrowerDto.setName(memberOpt.get().getName());
+        borrowerDto.setId(memberOpt.get().getId());
+
+        returnBookRes.setBook(bookDto);
+        returnBookRes.setIssueDate(loan.getIssueDate());
+        returnBookRes.setDueDate(loan.getDueDate());
+        returnBookRes.setId(loan.getId());
+        returnBookRes.setBorrower(borrowerDto);
+        returnBookRes.setReturnDate(loan.getReturnDate());
         return returnBookRes;
     }
 

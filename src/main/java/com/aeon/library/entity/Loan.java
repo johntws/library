@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 @Getter
@@ -23,9 +24,9 @@ public class Loan {
     @JoinColumn(name = "borrower_id")
     private Member member;
 
-    private Timestamp issueDate;
-    private Timestamp dueDate;
-    private Timestamp returnDate;
+    private Date issueDate;
+    private Date dueDate;
+    private Date returnDate;
 
     @CreationTimestamp
     private Timestamp createdDate;

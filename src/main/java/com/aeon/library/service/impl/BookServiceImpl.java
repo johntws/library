@@ -54,10 +54,10 @@ public class BookServiceImpl implements BookService {
             book.setIsbn(request.getIsbn());
             book.setAuthor(request.getAuthor());
             book.setTitle(request.getTitle());
+            bookRepository.save(book);
         }
 
         copy.setBook(book);
-        bookRepository.save(book);
         copyRepository.save(copy);
 
         CreateBookRes response = new CreateBookRes();
