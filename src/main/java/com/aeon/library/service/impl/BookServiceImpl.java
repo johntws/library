@@ -22,14 +22,11 @@ import java.util.Optional;
 @Service
 public class BookServiceImpl implements BookService {
     private final CopyRepository copyRepository;
-    private final DozerBeanMapper mapper;
     private final BookRepository bookRepository;
 
     public BookServiceImpl(CopyRepository copyRepository,
-                           DozerBeanMapper mapper,
                            BookRepository bookRepository) {
         this.copyRepository = copyRepository;
-        this.mapper = mapper;
         this.bookRepository = bookRepository;
     }
 

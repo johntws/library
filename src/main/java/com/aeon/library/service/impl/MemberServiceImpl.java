@@ -1,6 +1,7 @@
 package com.aeon.library.service.impl;
 
 import com.aeon.library.dto.*;
+import com.aeon.library.entity.Book;
 import com.aeon.library.entity.Copy;
 import com.aeon.library.entity.Member;
 import com.aeon.library.entity.Loan;
@@ -22,15 +23,13 @@ public class MemberServiceImpl implements MemberService {
     private final CopyRepository copyRepository;
     private final MemberRepository memberRepository;
     private final LoanRepository loanRepository;
-    private final DozerBeanMapper mapper;
 
     public MemberServiceImpl(MemberRepository memberRepository,
-                             CopyRepository copyRepository, LoanRepository loanRepository,
-                             DozerBeanMapper dozerBeanMapper) {
+                             CopyRepository copyRepository,
+                             LoanRepository loanRepository) {
         this.memberRepository = memberRepository;
         this.copyRepository = copyRepository;
         this.loanRepository = loanRepository;
-        this.mapper = dozerBeanMapper;
     }
 
     @Override
@@ -56,8 +55,11 @@ public class MemberServiceImpl implements MemberService {
             throw new GeneralException("Book is currently borrowed");
         }
 
+        Member member = memberOpt.get();
+        Book book = copy.getBook();
+
         Loan loan = new Loan();
-        loan.setMember(memberOpt.get());
+        loan.setMember(member);
         loan.setCopy(copy);
         loan.setIssueDate(today);
         loan.setDueDate(dueDate);
@@ -65,18 +67,22 @@ public class MemberServiceImpl implements MemberService {
 
         loanRepository.save(loan);
 
+        return getBorrowBookResMapper(book, copy, member, loan);
+    }
+
+    private static BorrowBookRes getBorrowBookResMapper(Book book, Copy copy, Member member, Loan loan) {
         BorrowBookRes borrowBookRes = new BorrowBookRes();
 
         BookDto bookDto = new BookDto();
-        bookDto.setIsbn(copy.getBook().getIsbn());
-        bookDto.setAuthor(copy.getBook().getAuthor());
-        bookDto.setTitle(copy.getBook().getTitle());
+        bookDto.setIsbn(book.getIsbn());
+        bookDto.setAuthor(book.getAuthor());
+        bookDto.setTitle(book.getTitle());
         bookDto.setId(copy.getId());
 
         BorrowerDto borrowerDto = new BorrowerDto();
-        borrowerDto.setEmail(memberOpt.get().getEmail());
-        borrowerDto.setName(memberOpt.get().getName());
-        borrowerDto.setId(memberOpt.get().getId());
+        borrowerDto.setEmail(member.getEmail());
+        borrowerDto.setName(member.getName());
+        borrowerDto.setId(member.getId());
 
         borrowBookRes.setBook(bookDto);
         borrowBookRes.setIssueDate(loan.getIssueDate());
