@@ -45,6 +45,33 @@ MySQL was chosen as the database for the project due to several key reasons. Fir
 - improve global exception handling
 - have a base response format that includes response code, response message, & error list
 
+# Docker
+
+## Dockerfile
+
+```docker
+# Stage 1: Build the application
+FROM maven:3.9.8-amazoncorretto-17-debian AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# Stage 2: Run the application
+FROM openjdk:17-oracle
+WORKDIR /app
+COPY --from=build /app/target/library-0.0.1-SNAPSHOT.jar /app/library-0.0.1-SNAPSHOT.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/library-0.0.1-SNAPSHOT.jar"]
+
+```
+
+## Usage
+
+```
+sudo docker build -t lms .
+docker run -p 8080:8080 lms -d
+```
+
 # Base URL
 
 `http://localhost:8080/`
@@ -69,9 +96,9 @@ Allows book registration
 
 ```json
 {
-  "isbn": "0545162076",
-  "author": "milk",
-  "title": "title 1"
+    "isbn": "0545162076",
+    "author": "milk",
+    "title": "title 1"
 }
 ```
 
@@ -87,11 +114,11 @@ Allows book registration
 
 ```json
 {
-  "copyId": 1,
-  "isbn": "0545162076",
-  "title": "title 1",
-  "author": "milk",
-  "borrowed": false
+    "copyId": 1,
+    "isbn": "0545162076",
+    "title": "title 1",
+    "author": "milk",
+    "borrowed": false
 }
 ```
 
@@ -130,36 +157,36 @@ Retrieve list of books
 
 ```json
 {
-  "totalPages": 1,
-  "currentPage": 1,
-  "bookList": [
-    {
-      "copies": [
+    "totalPages": 1,
+    "currentPage": 1,
+    "bookList": [
         {
-          "copyId": 1,
-          "borrowed": false
+            "copies": [
+                {
+                    "copyId": 1,
+                    "borrowed": false
+                },
+                {
+                    "copyId": 2,
+                    "borrowed": false
+                }
+            ],
+            "isbn": "0545162076",
+            "title": "title 1",
+            "author": "gg martin"
         },
         {
-          "copyId": 2,
-          "borrowed": false
+            "copies": [
+                {
+                    "id": 3,
+                    "borrowed": false
+                }
+            ],
+            "isbn": "222222222",
+            "title": "title 2",
+            "author": "aa forest"
         }
-      ],
-      "isbn": "0545162076",
-      "title": "title 1",
-      "author": "gg martin"
-    },
-    {
-      "copies": [
-        {
-          "id": 3,
-          "borrowed": false
-        }
-      ],
-      "isbn": "222222222",
-      "title": "title 2",
-      "author": "aa forest"
-    }
-  ]
+    ]
 }
 ```
 
@@ -176,8 +203,8 @@ Allows member registration
 
 ```json
 {
-  "name": "tester",
-  "email": "tester@gmail.com"
+    "name": "tester",
+    "email": "tester@gmail.com"
 }
 ```
 
@@ -191,9 +218,9 @@ Allows member registration
 
 ```json
 {
-  "memberId": 1,
-  "name": "tester",
-  "email": "tester@gmail.com"
+    "memberId": 1,
+    "name": "tester",
+    "email": "tester@gmail.com"
 }
 ```
 
@@ -211,9 +238,9 @@ Allows member to loan books
 
 ```json
 {
-  "copyId": "1",
-  "email": "test@gmail.com",
-  "dueDate": "2024-08-22"
+    "copyId": "1",
+    "email": "test@gmail.com",
+    "dueDate": "2024-08-22"
 }
 ```
 
@@ -246,20 +273,20 @@ Allows member to loan books
 
 ```json
 {
-  "loanId": 1,
-  "book": {
-    "isbn": "0545162076",
-    "title": "title 1",
-    "author": "gg martin",
-    "copyId": 1
-  },
-  "member": {
-    "memberId": 1,
-    "name": "test",
-    "email": "test@gmail.com"
-  },
-  "issueDate": "2024-08-16",
-  "dueDate": "2024-08-22"
+    "loanId": 1,
+    "book": {
+        "isbn": "0545162076",
+        "title": "title 1",
+        "author": "gg martin",
+        "copyId": 1
+    },
+    "member": {
+        "memberId": 1,
+        "name": "test",
+        "email": "test@gmail.com"
+    },
+    "issueDate": "2024-08-16",
+    "dueDate": "2024-08-22"
 }
 ```
 
@@ -276,8 +303,8 @@ Allows member to loan books
 
 ```json
 {
-  "copyId": "1",
-  "email": "jonathan@gmail.com"
+    "copyId": "1",
+    "email": "jonathan@gmail.com"
 }
 ```
 
