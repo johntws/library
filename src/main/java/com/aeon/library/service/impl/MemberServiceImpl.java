@@ -99,6 +99,7 @@ public class MemberServiceImpl implements MemberService {
             throw new GeneralException("Email doesn't exist");
         }
 
+        Member member = memberOpt.get();
         Optional<Copy> copyOpt = copyRepository.findById(request.getCopyId());
         if (copyOpt.isPresent() == false) {
             throw new GeneralException("Book doesn't exist");
@@ -121,10 +122,10 @@ public class MemberServiceImpl implements MemberService {
         copyRepository.save(copy);
         loanRepository.save(loan);
 
-        return getReturnBookResMapper(copy, memberOpt, loan);
+        return getReturnBookResMapper(copy, member, loan);
     }
 
-    private static ReturnBookRes getReturnBookResMapper(Copy copy, Optional<Member> memberOpt, Loan loan) {
+    private static ReturnBookRes getReturnBookResMapper(Copy copy, Member member, Loan loan) {
         ReturnBookRes returnBookRes = new ReturnBookRes();
         BookDto bookDto = new BookDto();
 
@@ -134,9 +135,9 @@ public class MemberServiceImpl implements MemberService {
         bookDto.setCopyId(copy.getId());
 
         MemberDto memberDto = new MemberDto();
-        memberDto.setEmail(memberOpt.get().getEmail());
-        memberDto.setName(memberOpt.get().getName());
-        memberDto.setMemberId(memberOpt.get().getId());
+        memberDto.setEmail(member.getEmail());
+        memberDto.setName(member.getName());
+        memberDto.setMemberId(member.getId());
 
         returnBookRes.setBook(bookDto);
         returnBookRes.setIssueDate(loan.getIssueDate());
