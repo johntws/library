@@ -1,11 +1,10 @@
 package com.aeon.library.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class CreateBookRes {
-    private Long id;
+    private Long copyId;
     private String isbn;
     private String title;
     private String author;

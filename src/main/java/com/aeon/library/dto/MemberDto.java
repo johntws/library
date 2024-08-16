@@ -3,8 +3,8 @@ package com.aeon.library.dto;
 import lombok.Data;
 
 @Data
-public class BorrowerDto {
-    private Long id;
+public class MemberDto {
+    private Long memberId;
     private String name;
     private String email;
 }

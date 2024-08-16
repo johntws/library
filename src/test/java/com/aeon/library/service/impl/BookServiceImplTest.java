@@ -172,7 +172,7 @@ class BookServiceImplTest {
         assertEquals(1, bookDto.getCopies().size());
 
         CopyDto copyDto = bookDto.getCopies().get(0);
-        assertEquals(1L, copyDto.getId());
+        assertEquals(1L, copyDto.getCopyId());
         assertEquals(false, copyDto.isBorrowed());
     }
 
@@ -226,7 +226,7 @@ class BookServiceImplTest {
         assertEquals(1, bookDto.getCopies().size());
 
         CopyDto copyDto = bookDto.getCopies().get(0);
-        assertEquals(1L, copyDto.getId());
+        assertEquals(1L, copyDto.getCopyId());
         assertEquals(false, copyDto.isBorrowed());
     }
 }

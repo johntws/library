@@ -57,7 +57,7 @@ public class BookServiceImpl implements BookService {
         copyRepository.save(copy);
 
         CreateBookRes response = new CreateBookRes();
-        response.setId(copy.getId());
+        response.setCopyId(copy.getId());
         response.setAuthor(book.getAuthor());
         response.setTitle(book.getTitle());
         response.setIsbn(book.getIsbn());
@@ -92,7 +92,7 @@ public class BookServiceImpl implements BookService {
             ArrayList<CopyDto> copyDtoList = new ArrayList<>();
             for (Copy copy : book.getCopies()) {
                 CopyDto copyDto = new CopyDto();
-                copyDto.setId(copy.getId());
+                copyDto.setCopyId(copy.getId());
                 copyDto.setBorrowed(copy.isBorrowed());
                 copyDtoList.add(copyDto);
             }

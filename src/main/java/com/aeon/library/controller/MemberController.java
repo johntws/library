@@ -23,8 +23,8 @@ public class MemberController {
     }
 
     @PostMapping("/{id}/loan")
-    public BorrowBookRes borrowBook(@PathVariable @Valid @NotNull Long id,
-                                    @Valid @RequestBody BorrowBookReq request) throws GeneralException {
+    public LoanBookRes borrowBook(@PathVariable @Valid @NotNull Long id,
+                                  @Valid @RequestBody LoanBookReq request) throws GeneralException {
         return memberService.borrowBook(id, request);
     }
 

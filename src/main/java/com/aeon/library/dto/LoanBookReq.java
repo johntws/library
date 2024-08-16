@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class BorrowBookReq {
+public class LoanBookReq {
     @NotNull
-    private Long id;
+    private Long copyId;
 
     @Email
     private String email;

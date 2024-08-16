@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class CopyDto {
-    private Long id;
+    private Long copyId;
     private boolean borrowed;
 }

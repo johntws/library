@@ -32,7 +32,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public BorrowBookRes borrowBook(Long borrowerId, BorrowBookReq request) throws GeneralException {
+    public LoanBookRes borrowBook(Long borrowerId, LoanBookReq request) throws GeneralException {
         Date today = new Date(Instant.now().toEpochMilli());
         Date dueDate = DateUtil.stringToDate(request.getDueDate(), DateUtil.YYYY_MM_DD);
         if (dueDate.after(today) == false) {
@@ -44,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
             throw new GeneralException("Email doesn't exist");
         }
 
-        Optional<Copy> copyOpt = copyRepository.findByIdAndDeletedFalse(request.getId());
+        Optional<Copy> copyOpt = copyRepository.findByIdAndDeletedFalse(request.getCopyId());
         if (copyOpt.isPresent() == false) {
             throw new GeneralException("Book doesn't exist");
         }
@@ -69,27 +69,27 @@ public class MemberServiceImpl implements MemberService {
         return getBorrowBookResMapper(book, copy, member, loan);
     }
 
-    private static BorrowBookRes getBorrowBookResMapper(Book book, Copy copy, Member member, Loan loan) {
-        BorrowBookRes borrowBookRes = new BorrowBookRes();
+    private static LoanBookRes getBorrowBookResMapper(Book book, Copy copy, Member member, Loan loan) {
+        LoanBookRes loanBookRes = new LoanBookRes();
 
         BookDto bookDto = new BookDto();
         bookDto.setIsbn(book.getIsbn());
         bookDto.setAuthor(book.getAuthor());
         bookDto.setTitle(book.getTitle());
-        bookDto.setId(copy.getId());
+        bookDto.setCopyId(copy.getId());
 
-        BorrowerDto borrowerDto = new BorrowerDto();
-        borrowerDto.setEmail(member.getEmail());
-        borrowerDto.setName(member.getName());
-        borrowerDto.setId(member.getId());
+        MemberDto memberDto = new MemberDto();
+        memberDto.setEmail(member.getEmail());
+        memberDto.setName(member.getName());
+        memberDto.setMemberId(member.getId());
 
-        borrowBookRes.setBook(bookDto);
-        borrowBookRes.setIssueDate(loan.getIssueDate());
-        borrowBookRes.setDueDate(loan.getDueDate());
-        borrowBookRes.setId(loan.getId());
-        borrowBookRes.setBorrower(borrowerDto);
+        loanBookRes.setBook(bookDto);
+        loanBookRes.setIssueDate(loan.getIssueDate());
+        loanBookRes.setDueDate(loan.getDueDate());
+        loanBookRes.setLoanId(loan.getId());
+        loanBookRes.setMember(memberDto);
 
-        return borrowBookRes;
+        return loanBookRes;
     }
 
     @Override
@@ -99,12 +99,12 @@ public class MemberServiceImpl implements MemberService {
             throw new GeneralException("Email doesn't exist");
         }
 
-        Optional<Copy> copyOpt = copyRepository.findById(request.getId());
+        Optional<Copy> copyOpt = copyRepository.findById(request.getCopyId());
         if (copyOpt.isPresent() == false) {
             throw new GeneralException("Book doesn't exist");
         }
 
-        Optional<Loan> loanOpt = loanRepository.findLoanedCopy(request.getId());
+        Optional<Loan> loanOpt = loanRepository.findLoanedCopy(request.getCopyId());
         Copy copy = copyOpt.get();
         if (copy.isBorrowed() == false || loanOpt.isPresent() == false) {
             throw new GeneralException("Book has already been returned");
@@ -131,18 +131,18 @@ public class MemberServiceImpl implements MemberService {
         bookDto.setIsbn(copy.getBook().getIsbn());
         bookDto.setAuthor(copy.getBook().getAuthor());
         bookDto.setTitle(copy.getBook().getTitle());
-        bookDto.setId(copy.getId());
+        bookDto.setCopyId(copy.getId());
 
-        BorrowerDto borrowerDto = new BorrowerDto();
-        borrowerDto.setEmail(memberOpt.get().getEmail());
-        borrowerDto.setName(memberOpt.get().getName());
-        borrowerDto.setId(memberOpt.get().getId());
+        MemberDto memberDto = new MemberDto();
+        memberDto.setEmail(memberOpt.get().getEmail());
+        memberDto.setName(memberOpt.get().getName());
+        memberDto.setMemberId(memberOpt.get().getId());
 
         returnBookRes.setBook(bookDto);
         returnBookRes.setIssueDate(loan.getIssueDate());
         returnBookRes.setDueDate(loan.getDueDate());
-        returnBookRes.setId(loan.getId());
-        returnBookRes.setBorrower(borrowerDto);
+        returnBookRes.setLoanId(loan.getId());
+        returnBookRes.setMember(memberDto);
         returnBookRes.setReturnDate(loan.getReturnDate());
         return returnBookRes;
     }
@@ -162,7 +162,7 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
 
         CreateMemberRes response = new CreateMemberRes();
-        response.setId(member.getId());
+        response.setMemberId(member.getId());
         response.setName(member.getName());
         response.setEmail(member.getEmail());
 

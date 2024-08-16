@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CreateMemberRes {
-    private Long id;
+    private Long memberId;
     private String name;
     private String email;
 }

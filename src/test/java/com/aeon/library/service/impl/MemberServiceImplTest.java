@@ -50,10 +50,10 @@ class MemberServiceImplTest {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String dueDateStr = formatter.format(due);
 
-        BorrowBookReq request = new BorrowBookReq();
+        LoanBookReq request = new LoanBookReq();
         request.setEmail("test@example.com");
         request.setDueDate(dueDateStr);
-        request.setId(1L);
+        request.setCopyId(1L);
 
         Date today =  new Date(Instant.now().toEpochMilli());
         Date dueDate = DateUtil.stringToDate(request.getDueDate(), DateUtil.YYYY_MM_DD);
@@ -76,11 +76,11 @@ class MemberServiceImplTest {
         when(memberRepository.findByEmail("test@example.com")).thenReturn(Optional.of(member));
         when(copyRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(copy));
 
-        BorrowBookRes response = memberService.borrowBook(1L, request);
+        LoanBookRes response = memberService.borrowBook(1L, request);
 
         assertNotNull(response);
         assertEquals("123213", response.getBook().getIsbn());
-        assertEquals("test@example.com", response.getBorrower().getEmail());
+        assertEquals("test@example.com", response.getMember().getEmail());
         assertEquals(today.toString(), response.getIssueDate().toString());
         assertEquals(dueDate, response.getDueDate());
 
@@ -93,7 +93,7 @@ class MemberServiceImplTest {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String dueDateStr = formatter.format(due);
 
-        BorrowBookReq request = new BorrowBookReq();
+        LoanBookReq request = new LoanBookReq();
         request.setEmail("invalid@example");
         request.setDueDate(dueDateStr);
 
@@ -108,7 +108,7 @@ class MemberServiceImplTest {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String dueDateStr = formatter.format(due);
 
-        BorrowBookReq request = new BorrowBookReq();
+        LoanBookReq request = new LoanBookReq();
         request.setEmail("test@example.com");
         request.setDueDate(dueDateStr);
 
@@ -129,10 +129,10 @@ class MemberServiceImplTest {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String dueDateStr = formatter.format(due);
 
-        BorrowBookReq request = new BorrowBookReq();
+        LoanBookReq request = new LoanBookReq();
         request.setEmail("test@example.com");
         request.setDueDate(dueDateStr);
-        request.setId(1L);
+        request.setCopyId(1L);
 
         Member member = new Member();
         member.setEmail("test@example.com");
@@ -157,7 +157,7 @@ class MemberServiceImplTest {
 
     @Test
     void testBorrowBookFailDueToInvalidDate() {
-        BorrowBookReq request = new BorrowBookReq();
+        LoanBookReq request = new LoanBookReq();
         request.setEmail("invalid@example.com");
         request.setDueDate("2023-12-31");
 
@@ -170,7 +170,7 @@ class MemberServiceImplTest {
     void testReturnBookSuccess() throws GeneralException {
         ReturnBookReq request = new ReturnBookReq();
         request.setEmail("test@example.com");
-        request.setId(1L);
+        request.setCopyId(1L);
 
         Member member = new Member();
         member.setEmail("test@example.com");
@@ -203,7 +203,7 @@ class MemberServiceImplTest {
 
         assertNotNull(response);
         assertEquals("123213", response.getBook().getIsbn());
-        assertEquals("test@example.com", response.getBorrower().getEmail());
+        assertEquals("test@example.com", response.getMember().getEmail());
         assertNotNull(response.getIssueDate());
         assertNotNull(response.getReturnDate());
 
@@ -215,7 +215,7 @@ class MemberServiceImplTest {
     void testReturnBookFailDueToAlreadyReturned() {
         ReturnBookReq request = new ReturnBookReq();
         request.setEmail("test@example.com");
-        request.setId(1L);
+        request.setCopyId(1L);
 
         Copy copy = new Copy();
         copy.setId(1L);
@@ -231,7 +231,7 @@ class MemberServiceImplTest {
     void testReturnBookFailDueToInvalidEmail() {
         ReturnBookReq request = new ReturnBookReq();
         request.setEmail("invalid@example.com");
-        request.setId(1L);
+        request.setCopyId(1L);
 
         Copy copy = new Copy();
         copy.setId(1L);
@@ -247,7 +247,7 @@ class MemberServiceImplTest {
     void testReturnBookFailDueToInvalidBook() {
         ReturnBookReq request = new ReturnBookReq();
         request.setEmail("test@example.com");
-        request.setId(2L);
+        request.setCopyId(2L);
 
         Copy copy = new Copy();
         copy.setId(1L);
@@ -263,7 +263,7 @@ class MemberServiceImplTest {
     void testReturnBookFailDueToInvalidUserAndBook() {
         ReturnBookReq request = new ReturnBookReq();
         request.setEmail("test@example.com");
-        request.setId(1L);
+        request.setCopyId(1L);
 
         Member member = new Member();
         member.setEmail("aaa@example.com");

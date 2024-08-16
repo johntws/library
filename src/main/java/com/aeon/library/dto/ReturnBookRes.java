@@ -3,13 +3,12 @@ package com.aeon.library.dto;
 import lombok.Data;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 
 @Data
 public class ReturnBookRes {
-    private Long id;
+    private Long loanId;
     private BookDto book;
-    private BorrowerDto borrower;
+    private MemberDto member;
     private Date issueDate;
     private Date dueDate;
     private Date returnDate;
