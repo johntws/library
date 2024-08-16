@@ -9,7 +9,6 @@ import com.aeon.library.repo.CopyRepository;
 import com.aeon.library.service.BookService;
 import com.aeon.library.specification.BookSpecification;
 import com.aeon.library.util.BookUtil;
-import org.dozer.DozerBeanMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
