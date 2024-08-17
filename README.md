@@ -44,6 +44,7 @@ MySQL was chosen as the database for the project due to several key reasons. Fir
 - report generation
 - improve global exception handling
 - have a base response format that includes response code, response message, & error list
+- String IDOR
 
 # Docker
 
