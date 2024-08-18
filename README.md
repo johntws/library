@@ -356,3 +356,7 @@ Allows member to loan books
   "returnDate": "2024-08-17"
 }
 ```
+
+
+# Database ER Diagram
+![library-ERD.png](library-ERD.png)

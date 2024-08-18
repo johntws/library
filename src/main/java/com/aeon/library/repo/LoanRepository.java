@@ -15,7 +15,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificat
     @Query(value = "select * from loan where borrower = :borrower and", nativeQuery = true)
     List<Loan> findOutStandingBooks(@Param("borrower") String borrower);
 
-    @Query(value = "select * from loan where book_id = :id and return_date is null", nativeQuery = true)
+    @Query(value = "select * from loan where copy_id = :id and return_date is null", nativeQuery = true)
     Optional<Loan> findLoanedCopy(@Param("id") Long id);
 
 }

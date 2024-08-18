@@ -17,11 +17,11 @@ public class Loan {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "book_id")
+    @JoinColumn(name = "copy_id")
     private Copy copy;
 
     @ManyToOne
-    @JoinColumn(name = "borrower_id")
+    @JoinColumn(name = "member_id")
     private Member member;
 
     private Date issueDate;
