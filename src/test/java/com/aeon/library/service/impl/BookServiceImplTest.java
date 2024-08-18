@@ -99,7 +99,6 @@ class BookServiceImplTest {
 
     @Test
     public void testRegisterBook_withInvalidISBN() {
-        // Act & Assert
         assertThrows(GeneralException.class, () -> bookService.registerBook(invalidRequest), "Invalid ISBN");
 
         verify(bookRepository, times(0)).findById(anyString());
@@ -109,13 +108,10 @@ class BookServiceImplTest {
 
     @Test
     public void testRegisterBook_withExistingBookAndMatchingDetails() throws GeneralException {
-        // Arrange
         when(bookRepository.findById(validRequest.getIsbn())).thenReturn(Optional.of(existingBook));
 
-        // Act
         CreateBookRes response = bookService.registerBook(validRequest);
 
-        // Assert
         assertEquals(existingBook.getIsbn(), response.getIsbn());
         assertEquals(existingBook.getAuthor(), response.getAuthor());
         assertEquals(existingBook.getTitle(), response.getTitle());
@@ -127,13 +123,11 @@ class BookServiceImplTest {
 
     @Test
     public void testRegisterBook_withExistingBookButNonMatchingDetails() {
-        // Arrange
         when(bookRepository.findById(validRequest.getIsbn())).thenReturn(Optional.of(existingBook));
 
         validRequest.setAuthor("Different Author");
         validRequest.setTitle("Different Title");
 
-        // Act & Assert
         assertThrows(GeneralException.class, () -> bookService.registerBook(validRequest), "Author and/or Title does not match existing ISBN");
 
         verify(copyRepository, times(0)).save(any(Copy.class));  // Copy should not be saved
@@ -141,7 +135,6 @@ class BookServiceImplTest {
 
     @Test
     public void testGetBooks_withValidSearchCriteria() {
-        // Arrange
         Book book1 = new Book();
         book1.setIsbn("0545162076");
         book1.setAuthor("John Doe");
@@ -157,10 +150,8 @@ class BookServiceImplTest {
 
         when(bookRepository.findAll(any(Specification.class), any(PageRequest.class))).thenReturn(bookPage);
 
-        // Act
         GetBookRes response = bookService.getBooks(request);
 
-        // Assert
         assertEquals(1, response.getTotalPages());
         assertEquals(1, response.getCurrentPage());
         assertEquals(1, response.getBookList().size());
@@ -210,8 +201,7 @@ class BookServiceImplTest {
 
         when(bookRepository.findAll(any(Specification.class), any(PageRequest.class))).thenReturn(bookPage);
 
-        // Act
-        request.setPageNo(2);  // 2nd page (pageNo starts from 1 in request)
+        request.setPageNo(2);
         GetBookRes response = bookService.getBooks(request);
 
         // Assert

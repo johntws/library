@@ -36,7 +36,7 @@ public class MemberServiceImpl implements MemberService {
         Date today = new Date(Instant.now().toEpochMilli());
         Date dueDate = DateUtil.stringToDate(request.getDueDate(), DateUtil.YYYY_MM_DD);
         if (dueDate.after(today) == false) {
-            throw new GeneralException("Due date is before today");
+            throw new GeneralException("Due date should be after today");
         }
 
         Optional<Member> memberOpt = memberRepository.findByEmail(request.getEmail());
